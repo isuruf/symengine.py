@@ -6,7 +6,6 @@ from libcpp.string cimport string
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
     PyObject_CallMethodObjArgs
 
-include "config.pxi"
 
 class SympifyError(Exception):
     pass
