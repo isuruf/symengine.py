@@ -93,10 +93,13 @@ class InstallWithCmake(_install):
                            tuple(ss.strip() for ss in s.split('='))
                            for s in defines]
             cmake_opts.extend(self.define)
+        cmake_opts.extend([('PYTHON_INSTALL_PATH', self.install_lib)])
 
     def run(self):
         # can't use super() here because _install is an old style class in 2.7
         _install.run(self)
+        if subprocess.call(["make", "install"]) != 0:
+            raise EnvironmentError("error calling make install")
 
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
@@ -112,7 +115,6 @@ setup(name = "symengine",
       license = "MIT",
       url = "https://github.com/sympy/symengine",
       packages=['symengine', 'symengine.lib', 'symengine.tests'],
-      package_data= {'symengine' : ['lib/symengine_wrapper.so']},
       cmdclass={
           'build' : BuildWithCmake,
           'install' : InstallWithCmake,
