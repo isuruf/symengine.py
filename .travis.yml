@@ -1,4 +1,10 @@
 language: cpp
+compiler:
+  - gcc
+  - clang
+os:
+  - linux
+  - osx
 sudo: false
 addons:
   apt:
@@ -91,13 +97,15 @@ matrix:
       os: osx
 
 install:
-  - export WITH_PYTHON="yes"
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
-  - source bin/install_travis.sh
 
   - git clone https://github.com/sympy/symengine symengine-cpp
   - cd symengine-cpp
+  - source bin/install_travis.sh
+  - source bin/test_travis.sh
+
+  - cd $PYTHON_SOURCE_DIR
   - source bin/install_travis.sh
 
 script:
