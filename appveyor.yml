@@ -68,6 +68,7 @@ install:
 
 - git clone https://github.com/sympy/symengine symengine-cpp
 - cd symengine-cpp
+- git checkout 653a2dbef438b6eec11f0bd8979bdbe08795e706
 - mkdir build
 - cd build
 
