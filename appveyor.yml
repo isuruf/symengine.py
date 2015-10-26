@@ -83,6 +83,7 @@ build_script:
 - if [%COMPILER%]==[MinGW-w64] python setup.py install build --compiler=mingw
 
 test_script:
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 - if not [%COMPILER%]==[MSVC15] nosetests
 - mkdir empty && cd empty
 - python %PYTHON_SOURCE_DIR%\bin\test_python.py
@@ -91,4 +92,4 @@ test_script:
 # `remmina` program in Ubuntu, use the login information that the line below
 # prints into the log.
 #on_finish:
-#- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
