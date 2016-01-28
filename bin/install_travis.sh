@@ -20,7 +20,8 @@ if [[ "${WITH_SAGE}" != "yes" ]]; then
     source activate test-environment;
 else
     wget -O- http://files.sagemath.org/linux/64bit/sage-7.0-Ubuntu_12.04-x86_64.tar.bz2 | tar xj
-    SAGE_ROOT=`pwd`/sage-7.0-x86_64-Linux
+    ls -l SageMath/local/lib
+    SAGE_ROOT=`pwd`/SageMath
     export PATH="$SAGE_ROOT:$PATH"
     source $SAGE_ROOT/src/bin/sage-env
     export our_install_dir=$SAGE_LOCAL
