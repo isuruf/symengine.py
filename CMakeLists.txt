@@ -13,8 +13,13 @@ include_directories(${SYMENGINE_INCLUDE_DIRS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Python REQUIRED)
 find_package(Cython REQUIRED)
+find_package(GMPY2)
 
 include_directories(${PYTHON_INCLUDE_PATH})
+
+if (GMPY2_INCLUDE_DIR)
+    include_directories(${GMPY2_INCLUDE_DIR})
+endif()
 
 if (MINGW AND ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8"))
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DMS_WIN64")
@@ -47,10 +52,16 @@ else()
     set(HAVE_SYMENGINE_PIRANHA False)
 endif()
 
-if(SYENGINE_FLINT_LIBRARIES)
+if(SYMENGINE_FLINT_LIBRARIES)
     set(HAVE_SYMENGINE_FLINT True)
 else()
     set(HAVE_SYMENGINE_FLINT False)
+endif()
+
+if(GMPY2_INCLUDE_DIR)
+    set(HAVE_SYMENGINE_GMPY2 True)
+else()
+    set(HAVE_SYMENGINE_GMPY2 False)
 endif()
 
 
@@ -60,6 +71,7 @@ message("CMAKE_CXX_FLAGS_DEBUG : ${CMAKE_CXX_FLAGS_DEBUG}")
 message("HAVE_SYMENGINE_MPFR : ${HAVE_SYMENGINE_MPFR}")
 message("HAVE_SYMENGINE_MPC : ${HAVE_SYMENGINE_MPC}")
 message("HAVE_SYMENGINE_FLINT : ${HAVE_SYMENGINE_FLINT}")
+message("HAVE_SYMENGINE_GMPY2 : ${HAVE_SYMENGINE_GMPY2}")
 
 message("Copying source of python wrappers into: ${CMAKE_CURRENT_BINARY_DIR}")
 file(COPY symengine/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/symengine)

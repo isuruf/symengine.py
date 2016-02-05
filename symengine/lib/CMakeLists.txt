@@ -10,12 +10,17 @@ add_subdirectory(symengine)
 
 cython_add_module_pyx(symengine_wrapper symengine.pxd)
 add_python_library(symengine_wrapper ${SRC})
-target_link_libraries(symengine_wrapper ${SYMENGINE_LIBRARIES})
+target_link_libraries(symengine_wrapper ${SYMENGINE_LIBRARIES} gmpy2)
+
+if (TARGET gmpy2)
+    target_link_libraries(symengine_wrapper gmpy2)
+endif()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
   # Must suppress strict aliasing for this file
   set_source_files_properties(
     symengine_wrapper.cpp
-    PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -Wno-unused-function -Wno-constant-logical-operand"
+    PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -Wno-unused-function"
     )
 endif()
 

@@ -28,6 +28,16 @@ cdef extern from 'gmpxx.h':
         mpq_class(mpq_t)
         mpq_t get_mpq_t()
 
+IF HAVE_SYMENGINE_GMPY2:
+    cdef extern from "gmpy2/gmpy2_mpz.h":
+        cdef PyObject* GMPy_MPZ_from_mpz_ptr(mpz_t m)
+        void GMPy_MPZ_get_mpz_ptr(mpz_t m, PyObject *obj)
+
+    cdef extern from "gmpy2/gmpy2_mpq.h":
+        cdef PyObject* GMPy_MPQ_from_mpq_ptr(mpq_t m)
+        void GMPy_MPQ_get_mpq_ptr(mpq_t m, PyObject *obj)
+
+
 cdef extern from "<set>" namespace "std":
 # Cython's libcpp.set does not support two template arguments to set.
 # Methods to declare and iterate a set with a custom compare are given here

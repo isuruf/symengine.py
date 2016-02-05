@@ -670,7 +670,11 @@ cdef class Integer(Number):
 
     def _sympy_(self):
         import sympy
-        return sympy.Integer(deref(self.thisptr).__str__().decode("utf-8"))
+        IF HAVE_SYMENGINE_GMPY2:
+            return sympy.Integer(<object>symengine.GMPy_MPZ_from_mpz_ptr(deref(symengine.rcp_static_cast_Integer(self.thisptr))
+                                    .as_mpz().get_mpz_t()))
+        ELSE:
+            return sympy.Integer(deref(self.thisptr).__str__().decode("utf-8"))
 
     def _sage_(self):
         try:
