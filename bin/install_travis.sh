@@ -12,7 +12,7 @@ if [[ "${WITH_SAGE}" != "yes" ]]; then
     conda config --set always_yes yes --set changeps1 no;
     conda update -q conda;
     conda info -a;
-    CONDA_PKGS="pip cython sympy nose pytest"
+    CONDA_PKGS="pip cython=0.23.4 sympy nose pytest"
     if [[ "${WITH_NUMPY}" == "yes" ]]; then
         CONDA_PKGS="${CONDA_PKGS} numpy";
     fi
