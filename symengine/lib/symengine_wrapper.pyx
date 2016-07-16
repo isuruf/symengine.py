@@ -12,6 +12,7 @@ import itertools
 from operator import mul
 from functools import reduce
 import collections
+from libcpp.pair cimport pair
 
 
 include "config.pxi"
@@ -101,6 +102,10 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ACoth.__new__(ACoth)
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
+    elif (symengine.is_a_Infty(deref(o))):
+        r = Infinity.__new__(Infinity)
+    elif (symengine.is_a_Piecewise(deref(o))):
+        r = Piecewise.__new__(Piecewise)
     else:
         raise Exception("Unsupported SymEngine class.")
     r.thisptr = o
@@ -199,6 +204,14 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy_AppliedUndef):
         name = str(a.func)
         return function_symbol(name, *(a.args))
+    elif a == sympy.S.NegativeInfinity:
+        return -oo
+    elif a == sympy.S.Infinity:
+        return oo
+    elif a == sympy.S.ComplexInfinity:
+        return zoo
+    elif isinstance(a, (sympy.Piecewise)):
+        return piecewise(*(a.args))
     elif isinstance(a, sympy.Function):
         return PyFunction(a, a.args, a.func, sympy_module)
     elif isinstance(a, (sympy.MatrixBase)):
@@ -212,7 +225,7 @@ def sympy2symengine(a, raise_error=False):
         return PyNumber(a, sympy_module)
 
     if raise_error:
-        raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
+        raise SympifyError("sympy2symengine: Cannot convert '%r' (%r) to a symengine type." % (a, type(a)))
 
 def sympify(a, raise_error=True):
     """
@@ -963,6 +976,17 @@ cdef class Complex(Number):
     def _sage_(self):
         import sage.all as sage
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
+
+
+cdef class Infinity(Number):
+    def _sympy_(self):
+        import sympy
+        return sympy.sympify(str(self))
+
+
+cdef class Piecewise(Basic):
+    pass
+    
 
 cdef class Add(Basic):
 
@@ -1984,10 +2008,12 @@ cdef class Sieve_iterator:
 I = c2py(symengine.I)
 E = c2py(symengine.E)
 pi = c2py(symengine.pi)
+oo = c2py(symengine.Inf)
+zoo = c2py(symengine.ComplexInf)
 
 def module_cleanup():
-    global I, E, pi, sympy_module, sage_module
-    del I, E, pi, sympy_module, sage_module
+    global I, E, pi, sympy_module, sage_module, oo, zoo
+    del I, E, pi, sympy_module, sage_module, oo, zoo
 
 import atexit
 atexit.register(module_cleanup)
@@ -2864,6 +2890,75 @@ def has_symbol(obj, symbol=None):
     else:
         return symengine.has_symbol(deref(b.thisptr),
                 deref(symengine.rcp_static_cast_Symbol(s.thisptr)))
+
+def to_interval(relational):
+    from sympy import (And, Or, Not, Intersection, Union, Complement,
+                       S, GreaterThan, LessThan, StrictLessThan,
+                       StrictGreaterThan, Interval)
+    if isinstance(relational, And):
+        return Intersection([to_interval(i) for i in relational.args])
+    elif isinstance(relational, Or):
+        return Union([to_interval(i) for i in relational.args])
+    elif isinstance(relational, Not):
+        return Complement([to_interval(i) for i in relational.args])
+    if relational == S.true:
+        return Interval(S.NegativeInfinity, S.Infinity, left_open=True, right_open=True)
+
+    if len(relational.free_symbols) != 1:
+        raise ValueError('Relational must only have one free symbol, %s' % relational)
+    if len(relational.args) != 2:
+        raise ValueError('Relational must only have two arguments')
+    free_symbol = list(relational.free_symbols)[0]
+    lhs = relational.args[0]
+    rhs = relational.args[1]
+    if isinstance(relational, GreaterThan):
+        if lhs == free_symbol:
+            return Interval(rhs, S.Infinity, left_open=False)
+        else:
+            return Interval(S.NegativeInfinity, rhs, right_open=False)
+    elif isinstance(relational, StrictGreaterThan):
+        if lhs == free_symbol:
+            return Interval(rhs, S.Infinity, left_open=True)
+        else:
+            return Interval(S.NegativeInfinity, rhs, right_open=True)
+    elif isinstance(relational, LessThan):
+        if lhs != free_symbol:
+            return Interval(rhs, S.Infinity, left_open=False)
+        else:
+            return Interval(S.NegativeInfinity, rhs, right_open=False)
+    elif isinstance(relational, StrictLessThan):
+        if lhs != free_symbol:
+            return Interval(rhs, S.Infinity, left_open=True)
+        else:
+            return Interval(S.NegativeInfinity, rhs, right_open=True)
+    else:
+        raise ValueError('Unsupported Relational: {}'.format(relational.__class__.__name__))
+
+    
+
+def piecewise(*v):
+    cdef symengine.PiecewiseVec vec
+    cdef pair[RCP[symengine.const_Interval], RCP[symengine.const_Basic]] p
+    cdef Number start, end
+    cdef RCP[const symengine.Number] start2, end2
+    cdef RCP[const symengine.Basic] b
+    cdef Basic e
+    for expr, rel in v:
+        i = to_interval(rel)
+        print(rel, i, type(rel), type(i))
+        start = sympify(i.start)
+        end = sympify(i.end)
+        start2 = symengine.rcp_static_cast_Number(start.thisptr)
+        end2 = symengine.rcp_static_cast_Number(end.thisptr)
+        b = symengine.interval(start2, end2, i.left_open, i.right_open)        
+        p.first = <RCP[symengine.const_Interval]>symengine.rcp_static_cast_Interval(b)
+        e = sympify(expr)
+        p.second = <RCP[symengine.const_Basic]>e.thisptr
+        vec.push_back(p)
+    e = sympify(v[0][1].free_symbols.pop())
+    return c2py(symengine.piecewise(symengine.std_move_PiecewiseVec(vec), e.thisptr))
+    
+
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()

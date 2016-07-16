@@ -153,6 +153,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(RCP[const Basic] &b) nogil
     RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
     RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
+    RCP[const Interval] rcp_static_cast_Interval "SymEngine::rcp_static_cast<const SymEngine::Interval>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
     Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
@@ -257,6 +258,11 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_ComplexMPC "SymEngine::is_a<SymEngine::ComplexMPC>"(const Basic &b) nogil
     bool is_a_Log "SymEngine::is_a<SymEngine::Log>"(const Basic &b) nogil
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
+    bool is_a_Infty "SymEngine::is_a<SymEngine::Infty>"(const Basic &b) nogil
+    bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
+    bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
+
+
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
@@ -330,6 +336,13 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
     RCP[const Basic] I
     RCP[const Basic] E
     RCP[const Basic] pi
+    RCP[const Basic] Inf
+    RCP[const Basic] NegInf
+    RCP[const Basic] ComplexInf
+
+cdef extern from "<symengine/infinity.h>" namespace "SymEngine":
+    cdef cppclass Infty(Number):
+        pass
 
 
 cdef extern from "<symengine/add.h>" namespace "SymEngine":
@@ -603,6 +616,7 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix()
         DenseMatrix(unsigned i, unsigned j) nogil
         DenseMatrix(unsigned i, unsigned j, const vec_basic &v) nogil
+        void resize(unsigned i, unsigned j) nogil
 
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
@@ -689,6 +703,11 @@ cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
     bool has_symbol(const Basic &b, const Symbol &x) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +
 
+cdef extern from "<symengine/logic.h>" namespace "SymEngine":
+    ctypedef Interval const_Interval "const SymEngine::Interval"
+    ctypedef vector[pair[RCP[const_Interval], RCP[const_Basic]]] PiecewiseVec;
+    cdef RCP[const Basic] piecewise(PiecewiseVec vec, RCP[const Basic] s)
+
 cdef extern from "<utility>" namespace "std":
     cdef integer_class std_move_mpz "std::move" (integer_class) nogil
     IF HAVE_SYMENGINE_MPFR:
@@ -696,6 +715,7 @@ cdef extern from "<utility>" namespace "std":
     IF HAVE_SYMENGINE_MPC:
         cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
     cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
+    cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
 
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
@@ -726,3 +746,11 @@ IF HAVE_SYMENGINE_MPFR:
 IF HAVE_SYMENGINE_MPC:
     cdef extern from "<symengine/eval_mpc.h>" namespace "SymEngine":
         void eval_mpc(mpc_t result, const Basic &b, mpfr_rnd_t rnd) nogil except +
+
+cdef extern from "<symengine/sets.h>" namespace "SymEngine":
+    cdef cppclass Set(Basic):
+        pass
+    cdef cppclass Interval(Set):
+        pass
+    cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r)
+
