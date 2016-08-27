@@ -11,7 +11,7 @@ environment:
   matrix:
     - BUILD_TYPE: "Release"
       COMPILER: MinGW
-      PYTHON_VERSION: 35
+      PYTHON_VERSION: 27
 
 install:
 - set PYTHON_SOURCE_DIR=%CD%
