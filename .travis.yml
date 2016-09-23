@@ -3,7 +3,6 @@ compiler:
   - gcc
   - clang
 os:
-  - linux
   - osx
 sudo: false
 addons:
@@ -41,9 +40,6 @@ env:
   - PYTHON_VERSION="3.5" WITH_MPFR="yes" WITH_NUMPY="yes"
 
 matrix:
-  exclude:
-    - compiler: clang
-    - os: osx
   include:
     - env: BUILD_TYPE="Debug" WITH_BFD="yes" WITH_PIRANHA="yes" PYTHON_VERSION="2.7"
       compiler: gcc
@@ -88,7 +84,7 @@ matrix:
 
 install:
   # Workaround till symengine C++ repo's script is fixed
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew uninstall cmake
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew uninstall cmake; fi
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
 
