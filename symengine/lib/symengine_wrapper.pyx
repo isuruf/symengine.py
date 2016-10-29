@@ -1992,8 +1992,8 @@ E = c2py(symengine.E)
 pi = c2py(symengine.pi)
 
 def module_cleanup():
-    global I, E, pi, sympy_module, sage_module
-    del I, E, pi, sympy_module, sage_module
+    global I, E, pi, sympy_module, sage_module, funcs
+    del I, E, pi, sympy_module, sage_module, funcs
 
 import atexit
 atexit.register(module_cleanup)
