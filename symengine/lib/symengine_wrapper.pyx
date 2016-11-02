@@ -2800,35 +2800,32 @@ cdef class _Lambdify(object):
 
 cdef class LambdaDouble(_Lambdify):
 
-    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
-    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
+    cdef symengine.LambdaRealDoubleVisitor lambda_double
+    cdef symengine.LambdaComplexDoubleVisitor lambda_double_complex
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
         if self.real:
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_)
+            self.lambda_double.init(args_, outs_)
         else:
-            self.lambda_double_complex.resize(1)
-            self.lambda_double_complex[0].init(args_, outs_)
+            self.lambda_double_complex.init(args_, outs_)
 
     cdef void _eval_real(self, double[::1] inp, double[::1] out):
-        self.lambda_double[0].call(&out[0], &inp[0])
+        self.lambda_double.call(&out[0], &inp[0])
 
     cdef void _eval_complex(self, double complex[::1] inp, double complex[::1] out):
-        self.lambda_double_complex[0].call(&out[0], &inp[0])
+        self.lambda_double_complex.call(&out[0], &inp[0])
 
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
 
-        cdef vector[symengine.LLVMDoubleVisitor] lambda_double
+        cdef symengine.LLVMDoubleVisitor lambda_double
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_)
+            self.lambda_double.init(args_, outs_)
 
         cdef void _eval_real(self, double[::1] inp, double[::1] out):
-            self.lambda_double[0].call(&out[0], &inp[0])
+            self.lambda_double.call(&out[0], &inp[0])
 
 
 def Lambdify(args, exprs, bool real=True, backend="lambda"):
