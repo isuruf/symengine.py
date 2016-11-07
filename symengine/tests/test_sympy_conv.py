@@ -412,3 +412,6 @@ def test_pynumber():
 
     b = b / x
     assert isinstance(b, PyNumber)
+
+import atexit
+atexit.register(sympy.cache.clear_cache)
