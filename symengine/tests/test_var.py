@@ -38,6 +38,12 @@ def test_var():
     # check return value
     assert v == [d, e, fg]
 
+    def cleanup():
+        global a, b, bb, cc, zz, _x, d, e, fg
+        del a, b, bb, cc, zz, _x, d, e, fg
+
+    cleanup()
+
 
 def test_var_global_namespace():
     # see if var() really injects into global namespace
@@ -49,6 +55,12 @@ def test_var_global_namespace():
     _make_z2()
     assert z2 == Symbol("z2")
 
+    def cleanup():
+        global z1, z2
+        del z1, z2
+
+    cleanup()
+
 
 def test_var_return():
     raises(ValueError, lambda: var(''))
@@ -58,6 +70,12 @@ def test_var_return():
     assert v2 == Symbol('q')
     assert v3 == (Symbol('q'), Symbol('p'))
 
+    def cleanup():
+        global q, p
+        del q, p
+
+    cleanup()
+
 
 def test_var_accepts_comma():
     v1 = var('x y z')
@@ -66,3 +84,10 @@ def test_var_accepts_comma():
 
     assert v1 == v2
     assert v1 == v3
+
+    def cleanup():
+        global x, y, z
+        del x, y, z
+
+    cleanup()
+
