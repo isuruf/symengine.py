@@ -67,8 +67,13 @@ class Function(Basic):
 class log(Function):
     _classes = (symengine.Log,)
 
-    def __new__(cls, a, b = E):
-        return symengine.log(a, b)
+    # b is set to None instead of E, because if b is set to
+    # E, a memory leak will occur in python2.7
+    def __new__(cls, a, b = None):
+        if b is not None:
+            return symengine.log(a, b)
+        else:
+            return symengine.log(a, E)
 
 
 class sin(Function):
