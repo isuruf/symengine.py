@@ -13,11 +13,13 @@ See License section for information about wheels
 
     pip install symengine --user
 
+<!--
 ### Ubuntu package manager
 
     add-apt-repository ppa:symengine/ppa
     apt-get update
     apt-get install python-symengine        # or python3-symengine if using python3
+-->
 
 ### Conda package manager
 
@@ -35,6 +37,8 @@ Install prerequisites.
 For SymEngine, only a specific commit/tag (see symengine_version.txt) is supported.
 Latest git master branch may not work as there may be breaking changes in SymEngine.
 
+`numpy` is required at runtime for `symengine.lambdify` support.
+
 Python wrappers can be installed by,
 
     python setup.py install
@@ -50,9 +54,7 @@ Additional options to setup.py are
         --inplace                                               # Build the extension in source tree
 
 Standard options to setup.py like `--user`, `--prefix` can be used to
-configure install location. NumPy is used if found by default, if you wish
-to make your choice of NumPy use explicit: then add
-e.g. ``WITH_NUMPY=False`` to ``--define``.
+configure install location.
 
 Use SymEngine from Python as follows:
 
