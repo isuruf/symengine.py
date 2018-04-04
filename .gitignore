@@ -18,6 +18,10 @@ cython_test.cpp
 *.vcxproj
 *.filters
 symengine/lib/symengine_wrapper.cpp
+symengine/lib/core.cpp
+symengine/lib/matrices.cpp
+symengine/lib/lambdify.cpp
+symengine/lib/functions.cpp
 
 # Config Files
 symengine/lib/config.pxi
