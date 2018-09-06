@@ -807,9 +807,7 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix &B) nogil except +
     void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil except +
     void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil except +
-    ctypedef vector[pair[int, int]] permutelist
-    void pivoted_FFGJ "pivoted_fraction_free_gauss_jordan_elimination"(const DenseMatrix &A, DenseMatrix &B, permutelist &P) nogil except +
-    void pivoted_GJ "pivoted_gauss_jordan_elimination"(const DenseMatrix &A, DenseMatrix &B, permutelist &P) nogil except +
+    void rref "reduced_row_echelon_form"(const DenseMatrix &A, DenseMatrix &B, vector[unsigned] &pivot_cols, bool normalize_last) nogil except +
     void inverse_GJ "SymEngine::inverse_gauss_jordan"(const DenseMatrix &A,
         DenseMatrix &B) nogil except +
     void FFLU_solve "SymEngine::fraction_free_LU_solve"(const DenseMatrix &A,
