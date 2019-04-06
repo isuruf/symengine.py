@@ -25,5 +25,6 @@ if [[ "${WITH_SAGE}" == "yes" ]]; then
 fi
 
 conda install -q ${conda_pkgs}
+pip install https://github.com/sympy/sympy/releases/download/sympy-1.4rc2/sympy-1.4rc2-py2.py3-none-any.whl
 conda clean --all
 source activate $our_install_dir;
