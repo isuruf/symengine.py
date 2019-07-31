@@ -9,6 +9,7 @@ set -x
 python setup.py install build_ext --inplace --symengine-dir=$our_install_dir
 
 # Test python wrappers
+py.test -s -v $PYTHON_SOURCE_DIR/symengine/tests/test_pickling.py
 py.test -s -v $PYTHON_SOURCE_DIR/symengine/tests/test_*.py
 mkdir -p empty && cd empty
 python $PYTHON_SOURCE_DIR/bin/test_python.py
