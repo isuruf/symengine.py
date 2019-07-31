@@ -4684,17 +4684,15 @@ def create_low_level_callable(lambdify, *args):
 cdef class LambdaDouble(_Lambdify):
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
         if self.real:
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse)
+            self.lambda_double.init(args_, outs_, cse)
         else:
-            self.lambda_double_complex.resize(1)
-            self.lambda_double_complex[0].init(args_, outs_, cse)
+            self.lambda_double_complex.init(args_, outs_, cse)
 
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+        self.lambda_double.call(&out[out_offset], &inp[inp_offset])
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double_complex[0].call(&out[out_offset], &inp[inp_offset])
+        self.lambda_double_complex.call(&out[out_offset], &inp[inp_offset])
 
     cpdef as_scipy_low_level_callable(self):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -4704,30 +4702,28 @@ cdef class LambdaDouble(_Lambdify):
             raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
         addr1 = cast(<size_t>&_scipy_callback_lambda_real,
                         CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
-        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        addr2 = cast(<size_t>&self.lambda_double, c_void_p)
         return create_low_level_callable(self, addr1, addr2)
 
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse)
+            self.lambda_double.init(args_, outs_, cse)
 
         cdef _load(self, const string &s):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].loads(s)
+            self.lambda_double.loads(s)
 
         def __reduce__(self):
             """
             Interface for pickle. Note that the resulting object is platform dependent.
             """
-            cdef bytes s = self.lambda_double[0].dumps()
+            cdef bytes s = self.lambda_double.dumps()
             return llvm_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+            self.lambda_double.call(&out[out_offset], &inp[inp_offset])
 
         cpdef as_scipy_low_level_callable(self):
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -4737,7 +4733,7 @@ IF HAVE_SYMENGINE_LLVM:
                 raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
             addr1 = cast(<size_t>&_scipy_callback_lambda_real,
                             CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
-            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            addr2 = cast(<size_t>&self.lambda_double, c_void_p)
             return create_low_level_callable(self, addr1, addr2)
 
     def llvm_loading_func(*args):
