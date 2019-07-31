@@ -100,7 +100,7 @@ install:
   - export TEST_CPP="no"
   - export MAKEFLAGS="-j2"
 
-  - git clone https://github.com/symengine/symengine symengine-cpp
+  - git clone https://github.com/isuruf/symengine -b destructor symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
   - git checkout `cat ../symengine_version.txt`
