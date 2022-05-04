@@ -46,6 +46,7 @@ cpdef void assign_to_capsule(object capsule, object value):
 
 cdef object c2py(rcp_const_basic o):
     cdef Basic r
+    cdef PyObject *obj
     if (symengine.is_a_Add(deref(o))):
         r = Expr.__new__(Add)
     elif (symengine.is_a_Mul(deref(o))):
@@ -74,7 +75,10 @@ cdef object c2py(rcp_const_basic o):
         r = Dummy.__new__(Dummy)
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
-            return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
+            obj = deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object()
+            result = <object>(obj)
+            Py_XDECREF(obj);
+            return result
         r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = S.Pi
@@ -1222,10 +1226,17 @@ cdef class Symbol(Expr):
     """
 
     def __init__(Basic self, name, *args, **kwargs):
+        cdef cppbool store_pickle;
         if type(self) == Symbol:
             self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
         else:
-            self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self)
+            store_pickle = kwargs.pop("store_pickle", False)
+            if store_pickle:
+                # First set the pointer to a regular symbol so that when pickle.dumps
+                # is called when the PySymbol is created, methods like name works.
+                self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
+            self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self,
+                store_pickle)
 
     def _sympy_(self):
         import sympy
